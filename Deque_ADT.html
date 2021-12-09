@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Deque ADT</title>
+  <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Deque ADT</h1>
+<h3>John Mieszczanski</h3>
+<p>The Deque is an abstract data type (ADT) that is a collection of elements similar to a Queue. The difference between
+a Queue and a Deque is that we can access elements at the front in the back. As you might recall, we can only access elements
+at the "front" of a Queue, and the "top" of a Stack. In this sense, the Deque is essentially just a double ended Queue
+that supports insertions and deletions at both front and back.</p>
+<p>The Deque ADT is outlined as follows:</p>
+<ul>
+  <li>Stores arbitrary objects (elements), where insertions and deletions are possible at both the front and back</li>
+  <li>Primary deque operations:
+    <ul>
+      <li><code>push_front(e: T) -> None</code>
+        <ul>
+          <li>Inserts element e at the front of the deque</li>
+          <li>O$(1)$ time complexity (with linked list)</li>
+        </ul>
+      </li>
+      <li><code>push_back(e: T) -> None</code>
+        <ul>
+          <li>Inserts element e at the back of the deque</li>
+          <li>O$(1)$ time complexity (with doubly linked list or singly linked list with tail pointer)</li>
+        </ul>
+      </li>
+      <li><code>pop_front() -> T</code>
+        <ul>
+          <li>Removes and returns element at the front of deque</li>
+          <li>O$(1)$ time complexity (with linked list)</li>
+        </ul>
+      </li>
+      <li><code>pop_back() -> T</code>
+        <ul>
+          <li>Removes and returns element at the back of deque</li>
+          <li>O$(1)$ time complexity (with doubly linked list or singly linked list with tail pointer)</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Auxiliary fixed-size-array operations:
+    <ul>
+      <li><code>len() -> int</code>
+        <ul>
+          <li>Returns the number of elements in the deque</li>
+        </ul>
+      </li>
+      <li><code>is_empty() -> bool</code>
+        <ul>
+          <li>Boolean indicating whether deque is empty</li>
+        </ul>
+      </li>
+      <li><code>front() -> T</code>
+        <ul>
+          <li>Returns reference to first element without removing</li>
+        </ul>
+      </li>
+      <li><code>back() -> T</code>
+        <ul>
+          <li>Returns reference to last element without removing</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><code>pop()</code>, <code>front()</code>, or <code>back()</code> on an empty deque results
+    in an error</li>
+  <li>Assume that a newly created deque is empty</li>
+</ul>
+<p>Now let's take a look at how the Deque ADT is implemented in Python by using a doubly linked list:</p>
+<pre><code>from typing import Generic, List, TypeVar
+from DoublyLinkedList import *
+
+T = TypeVar("T")  # allows variable T to be used to represent a generic type
+
+
+class EmptyError(Exception):
+    ''' class extending Exception to better document stack errors '''
+    def __init__(self, message: str):
+        self.message = message
+
+
+class Deque(Generic[T]):
+    ''' class to implement a deque ADT using a Python list '''
+
+    __slots__ = ("_data")           # will be a doubly linked list
+
+    def __init__(self):
+        self._data: DoublyLinkedList[T] = DoublyLinkedList()  # typing _data to be a list of type T
+
+    def __len__(self) -> int:
+        ''' allows the len function to be called using an Deque object, e.g.,
+               deque = Deque()
+               print(len(deque))
+        Returns:
+            number of elements in the queue, as an integer
+        '''
+        return len(self._data)
+
+    def push_right(self, item: T) -> None:
+        ''' pushes a given item of arbitrary type onto the deque
+        Args:
+            item: an item of arbitrary type
+        Returns:
+            None
+        '''
+        self._data.add_right(item)
+
+    def push_left(self, item: T) -> None:
+        ''' pushes a given item of arbitrary type onto the deque
+        Args:
+            item: an item of arbitrary type
+        Returns:
+            None
+        '''
+        self._data.add_left(item)
+
+    def pop_right(self) -> T:
+        ''' removes the rightmost element from the deque and returns that element
+        Returns:
+            the rightmost item, of arbitrary type
+        Raises:
+            EmptyError exception if the deque is empty
+        '''
+        if len(self._data) == 0:
+            raise EmptyError('Error: deque is empty')
+        return self._data.remove_right()
+
+    def pop_left(self) -> T:
+        ''' removes the leftmost element from the deque and returns that element
+        Returns:
+            the leftmost item, of arbitrary type
+        Raises:
+            EmptyError exception if the deque is empty
+        '''
+        if len(self._data) == 0:
+            raise EmptyError('Error: deque is empty')
+        return self._data.remove_left()  # calling Python list pop() on left of the list
+
+    def front(self) -> T:
+        ''' returns the leftmost element from the deque without modifying the deque
+        Returns:
+            the leftmost item, of arbitrary type
+        Raises:
+            EmptyError exception if the deque is empty
+        '''
+        if len(self._data) == 0:
+            raise EmptyError('Error in Deque.front(): deque is empty')
+        return self._data._head.next.data
+
+    def back(self) -> T:
+        ''' returns the rightmost element from the deque without modifying the deque
+        Returns:
+            the rightmost item, of arbitrary type
+        Raises:
+            EmptyError exception if the deque is empty
+        '''
+        if len(self._data) == 0:
+            raise EmptyError('Error in Deque.back(): deque is empty')
+        return self._data._tail.prev.data
+
+    def is_empty(self) -> bool:
+        ''' indicates whether the queue is empty
+        Returns:
+            True if the queue is empty, False otherwise
+        '''
+        return len(self._data) == 0
+
+    def __str__(self) -> str:
+        ''' returns an str implementation of the Queue '''
+        string = str(self._data)
+        return string</code></pre>
+<p>The code for the doubly linked list is given by:</p>
+<pre><code>from typing import Generic, TypeVar, Optional
+T = TypeVar("T")  # allows variable T to be used to represent a generic type
+
+
+class Node(Generic[T]):
+    def __init__(self, data: T):
+        self.data = data
+        self.next = None  # eventually another Node
+        self.prev = None
+
+
+class DoublyLinkedList(Generic[T]):
+    # Implementation uses sentinel head and tail nodes.
+    def __init__(self):
+        # Initialize sentinel nodes
+        self._head = Node(Generic[T])
+        self._tail = Node(Generic[T])
+        self._n = 0
+
+        self._head.data = None
+        self._head.prev = None
+        self._head.next = self._tail
+
+        self._tail.data = None
+        self._tail.prev = self._head
+        self._tail.next = None
+
+    def add_left(self, item: T) -> None:
+        ''' adds the given T-type data item as part of a Node to the left of the
+            linked list... remember to reset the head pointer, and, when
+            appropriate, the tail pointer
+        Args:
+            item: a type T data item to be included as the data in the inserted Node
+        Returns:
+            None:
+        '''
+        new_node = Node(item)
+        if self._head.next == self._tail:
+            # First Node in the list
+            self._head.next = new_node
+            self._tail.prev = new_node
+            new_node.prev = self._head
+            new_node.next = self._tail
+        else:
+            self._head.next.prev = new_node
+            new_node.next = self._head.next
+            new_node.prev = self._head
+            self._head.next = new_node
+
+        self._n += 1
+
+    def add_right(self, item: T) -> None:
+        ''' adds the given T-type data item as part of a Node to the right of the
+            linked list... remember to reset the tail pointer, and, when
+            appropriate, the head pointer
+        Args:
+            item: a type T data item to be included as the data in the inserted Node
+        Returns:
+            None:
+        '''
+        new_node = Node(item)
+        if self._head.next == self._tail:
+            # First Node in the list
+            self._head.next = new_node
+            self._tail.prev = new_node
+            new_node.prev = self._head
+            new_node.next = self._tail
+        else:
+            self._tail.prev.next = new_node
+            new_node.prev = self._tail.prev
+            new_node.next = self._tail
+            self._tail.prev = new_node
+
+        self._n += 1
+
+    def remove_left(self) -> Optional[T]:
+        ''' removes the first Node in the linked list, returning the data item
+            inside that Node...  Remember to handle the special case of an
+            empty list (what should the head and tail pointers be in that case?)
+            and remember to update the head & tail pointer(s) when appropriate.
+        Returns:
+            a T type data item extracted from the removed Node
+        '''
+        if self._head.next != self._tail:
+            data = self._head.next.data
+            self._head.next = self._head.next.next
+            self._head.next.prev = self._head
+            self._n -= 1
+        else:
+            data = None
+
+        return data
+
+    def remove_right(self) -> Optional[T]:
+        ''' removes the last Node in the linked list, returning the data item
+            inside that Node...  Remember to handle the special case of an
+            empty list (what should the head and tail pointers be in that case?)
+
+            Note: This one is trickier because you always have to walk (almost)
+            all the way through the list in order to know what the new tail
+            should be.
+
+            Remember to update the head & tail pointer(s) when appropriate.
+
+        Returns:
+            a T type data item extracted from the removed Node
+        '''
+        if self._head.next != self._tail:
+            data = self._tail.prev.data
+            self._tail.prev = self._tail.prev.prev
+            self._tail.prev.next = self._tail
+            self._n -= 1
+        else:
+            data = None
+
+        return data
+
+    def __len__(self):
+        return self._n
+
+    def __str__(self):
+        ''' returns a str representation of the linked list data
+        Returns:
+            an str representation of the linked list, showing head pointer
+                and data tiems
+        '''
+        str_ = "head->"
+
+        # start out at the head Node, and walk through Node by Node until we
+        # reach the end of the linked list (i.e., the ._next entry is None)
+        ptr_ = self._head.next
+        while ptr_ is not self._tail:
+            str_ += "[" + str(ptr_.data) + "]->"
+            ptr_ = ptr_.next  # move ptr_ to the next Node in the linked list
+
+        if self._head.next != self._tail: str_ = str_[:-2]
+        str_ += "<-tail"
+        return str_</code></pre>
+<p>If we run the following code:</p>
+<pre><code>def main():
+   # example using int as the generic type
+   d = Deque[int]()
+   d.push_right(8)
+   d.push_right(6)
+   d.push_left(7)
+   print(d)
+
+   print(f'Pop left: {d.pop_left()}')
+   print(d)
+   print(len(d))
+   print()
+
+   print(f'Pop left: {d.pop_left()}')
+   print(d)
+   print(len(d))
+   print()
+
+   print(f'Pop right: {d.pop_right()}')
+   print(d)
+   print(len(d))
+   print()
+
+   try:
+       print(f'Pop right: {d.pop_right()}')
+   except EmptyError as err:
+       print(err)
+
+
+if __name__ == '__main__':
+    main()</code></pre>
+<p>we get</p>
+<pre><code class="plaintext">head->[7]->[8]->[6]<-tail
+Pop left: 7
+head->[8]->[6]<-tail
+2
+
+Pop left: 8
+head->[6]<-tail
+1
+
+Pop right: 6
+head-><-tail
+0
+
+Error: deque is empty</code></pre>
+<p>The doubly linked list is ideal for the Deque ADT because it allows us to add and remove items in constant time. If we
+tried to implement the Deque using an array, we would have to shift all of our elements to the right or left when pushing
+and popping from the front. Additionally, we need the <em>doubly</em> part of the doubly linked list because otherwise
+pushing and popping from the back of the Deque will take O$(n)$ time since we would have to traverse the whole Deque (unless
+we have a singly linked list with a tail pointer). The doubly linked list allows us to access the <em>tail</em> of the
+Deque in constant time.</p>
+<p>One common (and trivial) application of a Deque is using it to verify if a word is a
+<a href="https://bradfieldcs.com/algos/deques/palindrome-checker/">palindrome</a> or not. To refresh you memory, a
+<em>palindrome</em> is a word that is the same forward and backward (i.e. mom, poop, toot, etc.). If we push all the
+letters of a word (or sentence) onto a Deque, we can then pop off both ends at once and check if the letters are equal or
+not. If they are equal, we pop off the next two letters (or any other character) from both sides and compare. We keep
+doing this until the Deque is empty or there is only one character left. If we reach this point with all the paired
+pop-offs equaling each other, then we have verified the word or string is a palindrome.</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/Deque_Zine.jpg" alt="Deque Zine" width="500" height=450">
+<figcaption>Deque Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

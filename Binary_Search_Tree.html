@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Binary Search Trees</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Binary Search Trees</h1>
+<h3>John Mieszczanski</h3>
+<p>A <b>Binary Search Tree (BST)</b> is a binary tree $T$ with each node $n$ storing a key-value pair (k, v) such that:</p>
+<ul>
+    <li>Keys in the left subtree of $n$ are less than $k$</li>
+    <li>Keys in the right subtree of $n$ are greater than $k$</li>
+</ul>
+<p>When it comes to any sort of binary tree, there are several ways to traverse the tree:</p>
+<ul>
+    <li><u>Preorder traversal</u>: Node $n$ visited before its descendants</li>
+    <li><u>Postorder traversal</u>: Node $n$ visited after its descendants</li>
+    <li><u>Inorder traversal</u>: Node $n$ visited after traversing its left subtree, but before traversing its
+    right subtree</li>
+</ul>
+<p>When it comes to BSTs, we traverse the tree with an inorder traversal. Because of how BSTs are defined, this means
+we will visit nodes in an increasing order of keys. Also, the time complexity will be O$(n)$ since in a tree with
+$n$ nodes, we visit all nodes in a traversal. We can implement an inorder traversal of a BST using recursion as shown
+below:</p>
+<pre><code class="plaintext">def in_order(p: TreeNode):
+    if p has left child:
+        in_order(left_child)
+    visit p
+    if p has right child:
+        in_order(right_child)</code></pre>
+<p>Visiting all the nodes of a BST is nice, but we want to actually be able to search for a specific key $k$ in a BST. A
+pseudocode algorithm for searching that uses recursion is shown below:</p>
+<pre><code class="plaintext">def bst_search(T: BinaryTree, p: TreeNode, k):
+    if p's key == k: return p
+    elif k < p's key and p has left child:
+        return bst_search(T, p's left child, k)
+    elif k > p's key and p has right child:
+        return bst_search(T, p's right child, k)
+    else: return None   # If we reach this point, key k was not found</code></pre>
+<p>The above algorithm works because if we go down the left or right subtree of a given node, we don't need to worry
+about the keys of the nodes from the other subtree being less (if we went down left subtree) or greater (if we went down
+right subtree) than the value we are looking for, so we will have essentially halved our search space. Because of this
+the time complexity of searching a BST in O$(\text{log } n)$ if the tree is balanced. To clarify, if we have a tree of
+height $h$ with $n$ entries and the BST is <em>complete</em> (see discussion of heaps), then $h = \lfloor \text{log} n \rfloor$
+which means the search will be O$(\text{log } n)$. If the tree is not balanced (i.e. not <em>complete</em>), then the
+time complexity will be O$(n)$ in the worst case because it is possible all the nodes tack on to the right (or left) in
+which case the tree is effectively a sorted list. There are many tree rotation operations that can be implemented in
+order to maintain the balance of a BST as new nodes are added.</p>
+<p>Lastly, let's take a look at some pseudocode for a BST insertion algorithm:</p>
+<pre><code class="plaintext">def insert(T: BinaryTree, key, value):
+    p = bst_search(T, k)  # If not found by BST search, assume the function returns the last node encountered in
+    # the search
+    if p's key == k: replace old value with given value
+    elif k < p's key:
+        add node (k,v) as left child of p
+    else:
+        add node (k,v) as right child of p</code></pre>
+<p>This algorithm works because if bst_search() does not find the key, it will leave us off at whatever location where
+we would have <em>expected</em> to find the key, so it is trivial to insert the key and its value at that location. Insertion
+has the same time complexity as search because we have to call search to get insertion to work.</p>
+<p>One of the main <a href="https://en.wikipedia.org/wiki/Binary_search_tree#Examples_of_applications">applications</a> of BSTs
+is to implement sorting algorithms in an efficient manner. In such an implementation, a series of elements (probably numbers, maybe
+with associated data i.e. key-value pair) would be passed into the BST and sorted using the <code>insert</code> operation. If
+we wanted to read off the elements of the BST in order, we could perform an inorder traversal. As mentioned before, it is
+possible that this could lead to a heavily unbalanced tree, reducing efficiency. This is why some types of BSTs, such as
+AVL trees and red-black trees are implemented in a way that makes them self-balancing. In other words, these types of BSTs
+try to keep the height $h$ of the tree to a minimum in order to keep the time complexity as close to O$(\text{log } n)$
+as possible.</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/BST_Zine.jpg" alt="BST Zine" width="600" height="650">
+<figcaption>BST Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

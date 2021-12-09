@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stack ADT</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Stack ADT</h1>
+<h3>John Mieszczanski</h3>
+<p>The Stack is an abstract data type (ADT) that is a collection of elements similar to a stack of plates. When accessing
+elements from the Stack, the process is LIFO (last in, first out), which essentially just means that the most
+recent item "pushed" onto the stack is the first to be "popped" off. Some direct applications include:</p>
+<ul>
+    <li>Direct applications:
+        <ul>
+            <li>Page-visited history in a web browser</li>
+            <li>Undo/redo-sequence in a text editor</li>
+            <li>Chain of function calls used in Python (and other languages)</li>
+        </ul>
+    </li>
+    <li>Indirect applications:
+        <ul>
+            <li>Auxiliary data structure used by some algorithms (such as depth-first-search)</li>
+            <li>As an internal component of other data structures</li>
+        </ul>
+    </li>
+</ul>
+<p>The Stack ADT is outlined as follows:</p>
+<ul>
+    <li>Stores arbitrary objects (elements), where insertions & deletions are LIFO</li>
+    <li>Primary stack operations:
+        <ul>
+            <li><code>push(e: T) -> None</code>
+                <ul>
+                    <li>Inserts element e at the top of the stack</li>
+                    <li>O$(1)$ time complexity</li>
+                </ul>
+            </li>
+            <li><code>pop() -> T</code>
+                <ul>
+                    <li>Removes and returns element at the top of stack</li>
+                    <li>O$(1)$ time complexity</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>Auxiliary fixed-size-array operations:
+        <ul>
+            <li><code>len() -> int</code>
+                <ul>
+                    <li>Returns the number of elements in the stack</li>
+                </ul>
+            </li>
+            <li><code>is_empty() -> bool</code>
+                <ul>
+                    <li>Boolean indicating whether stack is empty</li>
+                </ul>
+            </li>
+            <li><code>top() -> T</code>
+                <ul>
+                    <li>Returns reference to top element without removing</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li><code>pop()</code> or <code>top()</code> on an empty stack results in an error</li>
+    <li>Assume that a newly created stack is empty</li>
+</ul>
+<p>Now let's take a look at how the Stack ADT is implemented in Python by using lists:</p>
+<pre><code>from typing import Generic, List, TypeVar
+
+T = TypeVar("T")  # allows variable T to be used to represent a generic type
+
+
+class EmptyError(Exception):
+    ''' class extending Exception to better document stack errors '''
+    def __init__(self, message: str):
+        self.message = message
+
+
+class Stack(Generic[T]):
+    ''' class to implement a stack ADT using a Python list '''
+
+    __slots__ = ("_data")           # will be a Python list
+
+    def __init__(self):
+        self._data: List[T] = []    # typing _data to be a list of type T
+
+    def __len__(self) -> int:
+        ''' allows the len function to be called using an Stack object, e.g.,
+               stack = Stack()
+               print(len(stack))
+        Returns:
+            number of elements in the stack, as an integer
+        '''
+        return len(self._data)
+
+    def push(self, item: T) -> None:
+        ''' pushes a given item of arbitrary type onto the stack
+        Args:
+            item: an item of arbitrary type
+        Returns:
+            None
+        '''
+        self._data.append(item)
+
+    def pop(self) -> T:
+        ''' removes the topmost element from the stack and returns that element
+        Returns:
+            the topmost item, of arbitrary type
+        Raises:
+            EmptyError exception if the stack is empty
+        '''
+        if len(self._data) == 0:
+            raise EmptyError('Error in Stack.pop(): stack is empty')
+        return self._data.pop()  # calling Python list pop()
+
+    def top(self) -> T:
+        ''' returns the topmost element from the stack without modifying the stack
+        Returns:
+            the topmost item, of arbitrary type
+        Raises:
+            EmptyError exception if the stack is empty
+        '''
+        if len(self._data) == 0:
+            raise EmptyError('Error in Stack.top(): stack is empty')
+        return self._data[-1]
+
+    def is_empty(self) -> bool:
+        ''' indicates whether the stack is empty
+        Returns:
+            True if the stack is empty, False otherwise
+        '''
+        return len(self._data) == 0
+
+    def __str__(self) -> str:
+        ''' returns an str implementation of the Stack '''
+        string = "---top---\n"
+        for i in range(len(self._data) - 1, -1, -1):
+            string += str(self._data[i]) + "\n"
+        string += "---bot---"
+        return string</code></pre>
+<p>If we run the following code:</p>
+<pre><code>def main():
+    a = Stack()
+    print(a)
+    a.push(8)
+    print(a)
+    a.push(6)
+    print(a)
+    a.push(7)
+    print(a)
+    print(f'Is stack empty? {a.is_empty()}')
+    print(f'Size of stack: {len(a)}')
+    print(f'Popping {a.pop()}')
+    print(a)
+    print(f'Popping {a.pop()}')
+    print(a)
+    print(f'Popping {a.pop()}')
+    print(a)
+    # pop from empty list
+    try:
+        print(f'Popping {a.pop()}')
+    except EmptyError as error:
+        print(error)
+    try:
+        print(f'What is at the top? {a.top()}')
+    except EmptyError as error:
+        print(error)
+
+
+if __name__ == "__main__":
+    main()</code></pre>
+<p>we would get</p>
+<pre><code class="plaintext">---top---
+---bot---
+
+---top---
+8
+---bot---
+
+---top---
+6
+8
+---bot---
+
+---top---
+7
+6
+8
+---bot---
+
+Is stack empty? False
+Size of stack: 3
+Popping 7
+---top---
+6
+8
+---bot---
+
+Popping 6
+---top---
+8
+---bot---
+
+Popping 8
+---top---
+---bot---
+
+Cannot call .pop() on empty Stack object
+Cannot call .top() on empty Stack object
+</code></pre>
+<p>Again, note that the last item to be pushed onto the Stack (7) is the first to be popped off. It is not possible to
+access the element on the bottom of the stack until we have popped off all the elements above it. Additionally, as we
+outlined in the ADT, our implementation throws an error when trying to execute <code>pop()</code> or <code>top()</code>
+on an empty Stack object. It was also mentioned that the Stack in the code above was implemented using a list -- an array
+type structure in Python. It would also be possible to implement the stack using a singly or doubly linked list.</p>
+<p>To summarize, the Stack is a fundamental ADT with many important uses. In this
+<a href="https://medium.com/swlh/stack-data-structure-practical-applications-operations-e4e308008752">Medium</a> article,
+the author discusses some other common uses of the Stack. One of these includes an IDE making sure all parentheses are closed
+in your code. We actually implemented something like this during class when we wrote a program to check all HTML tags
+were properly paired in a given HTML file. The code for that lab is shown below this. Other uses include the Depth First
+Search algorithm (something else we implemented in our Maze solving lab) and the undo/redo function common to many word processors. In this latter application, every action
+you perform in the word processor is pushed onto the stack and when we want to undo this action, we simply pop it off.</p>
+<pre><code>from ArrayStack import ArrayStack
+from ArrayStack import EmptyError
+import re, sys
+
+'''
+def file_to_string(filename: str) -> str:
+    with open(filename, "r") as some_file:
+        data = some_file.read()
+        some_file.close()
+        return data
+'''
+
+# This function returns TRUE if the HTML consists entirely of properly-matched tags, or FALSE if there is any
+# improperly-matched tags. Will not work with HTML empty elements.
+def parse_html(html_text: str) -> bool:
+    # Empty elements are elements between brackets that don't have a closing tag
+    empty_elements_list = ["!DOCTYPE", "area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link",
+                           "meta", "param", "source", "track", "wbr"]
+    html_tags_list = re.findall('<(.*?)>', html_text)  # Using regex to find all the tags in the string.
+    html_stack = ArrayStack()  # Initialize stack to put tags in.
+    # print(html_tags_list)
+    for tag in html_tags_list:
+        # Some tags have information after the tag; e.g. &lthtml lang="en">. If we don't remove the information
+        # after the space, our parser function won't work as &lthtml lang="en"> won't match with &lt/html>.
+        # print(tag)
+        tag = tag.split(' ')[0]
+        # print(tag)
+        # If tag is an empty element it will not have a closing tag, so we need to filter these out.
+        if tag in empty_elements_list:
+            continue
+        # If tag does not start with '/', then we push it on to the stack.
+        if not tag.startswith('/'):
+            html_stack.push(tag)
+        else:
+            # If tag does start with '/' and nothing has been pushed onto the stack yet, then we will already know
+            # that the html file is not valid because there was no matching starting tag.
+            if html_stack.is_empty():
+                return False
+            # If the stack is not empty, we compare the tag starting with '/' to whatever is on the top of the
+            # stack. If there is a match, then we can proceed with our test as we will have found a pair. If there
+            # is no match, then the test failed and the html file is not valid.
+            else:
+                tag2 = html_stack.pop()
+                if tag.replace('/', '') != tag2:
+                    return False
+    # If the for-loop has been completed, then the html file must be valid (in terms of its tags).
+    return True
+
+
+def main():
+    try:
+        with open(sys.argv[1], "r") as some_file:
+            data = some_file.read()
+            some_file.close()
+        print(f'File : Valid HTML file (T/F)?')
+        print(f'{sys.argv[1]} : {parse_html(data)}')
+    except IndexError as error:
+        print(f'IndexError : Need to enter an HTML file as the second command line argument')
+        sys.exit(2)
+    except FileNotFoundError as error:
+        print(f'FileNotFoundError : Need to enter a proper file path -- {sys.argv[1]} not found.')
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()</code></pre>
+<p>With this code, we can enter some HTML file on the command line and determine if it is valid or not.</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/Stack_Zine.jpg" alt="Stack Zine" width="500" height=400">
+<figcaption>Stack Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Big-Oh / Algorithm Analysis</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Big-Oh / Algorithm Analysis</h1>
+<h3>John Mieszczanski</h3>
+When designing an algorithm for a given problem, we often need a way of determining how "good" the algorithm is in terms
+of speed and memory. It all well and good to come up with some random solution to a given problem, but if that solution is
+not the most efficient, we could be wasting our own time, or someone else's who is using our code! There are two approaches to
+analyzing the efficiency of an algorithm or abstract data type (ADT):
+<ul>
+    <li><u>experimental</u>: implement and then time/measure execution</li>
+    <li><u>asymptotic</u>: the theoretical study of high-level algorithm description</li>
+</ul>
+<p>The reason asymptotic analysis is used in conjunction with experimental is because we need to be able to compare
+different algorithms independent of the hardware and software systems they are running on. Additionally, there is no
+need to implement an algorithm before conducting an asymptotic analysis, and it can take into account any possible input, not
+just what we pass into it for some experiment. In other words, the generalization of asymptotic analysis is its main selling
+point to computer scientists.</p>
+<p>Now that we have introduced asymptotic analysis, you might wonder how the "analysis" part is actually carried out. The
+key part of asymptotic analysis is counting the number of <u>primitive operations</u> an algorithm executes. A primitive
+operation is simply a low level instruction with constant execution time. Some examples include:</p>
+<ul>
+    <li>Assigning an identifier (named location) to an object</li>
+    <li>Determining the object associated with an identifier</li>
+    <li>Arithmetic operations (+, *, -, /, %, etc.)</li>
+    <li>Comparing two numbers (==, !=, <, >, >=, <=, etc.)</li>
+    <li>Accessing a single element of a list</li>
+    <li>Calling a function (excluding the internals of that function's operation)</li>
+    <li>Returning from a function</li>
+</ul>
+<p>The reason we take into account all these primitive operations is because they all time and thus affect overall efficiency.
+Effectively, we can use the number of primitive operations as a proxy for run time. We often count the number of primitive
+operations as a function of input size $n$ in order to get an estimate on run time.</p>
+<p>Another key part of asymptotic analysis is comparing the best vs. average vs. worst case of a given algorithm:</p>
+<ul>
+    <li><u>Best</u>: What is the best possible scenario (input) for this algorithm, and how well does it perform in that scenario?</li>
+    <li><u>Worst</u>: What is the worst scenario (input) for this algorithm?</li>
+    <li><u>Average</u>: What is performance averaged over <b><u>all possible inputs?</u></b></li>
+</ul>
+<p>Given the difficulty of conducting an average-case analysis, this class mainly focused on conducting worse-case analysis
+as a function of input size $n$. This approach is common and is conducted with "Big-Oh" notation. We define this notation
+as follows:</p>
+<p>A function $f(n)$ is $O(g(n))$ if and only if $f(n) \leq cg(n)$ for $n \geq n_0$ where</p>
+<ul>
+    <li>$f(n)$: Counts of the number of primitive operations of our algorithm</li>
+    <li>$g(n)$: A common reference function</li>
+    <li>$n$: The input size (arbitrary)</li>
+    <li>$c$: A real-valued constant $> 0$</li>
+    <li>$n_0$: An integer-valued constant $\geq 1$</li>
+</ul>
+<p>Another way of describing Big-Oh notation would be that it gives an upper bound on some function $f(n)$ within a constant
+factor.The graphic below illustrates some common reference functions $g(n)$:</p>
+<figure>
+    <img src="/Users/John1/Documents/DCS229/Final_Project/jarednielsen-big-o-chart.png" alt="Big-Oh chart" width="800" height="600">
+    <figcaption><a href="https://jarednielsen.com/big-o-notation/">Big-Oh chart</a></figcaption>
+</figure>
+<p>We can also list out these functions:</p>
+<ul>
+    <li>Constant: $g(n) = 1$</li>
+    <li>Logarithmic: $g(n) = log n$</li>
+    <li>Linear: $g(n) = n$</li>
+    <li>Linearithmic: $g(n) = n log n$</li>
+    <li>Quadratic: $g(n) = n^2$</li>
+    <li>Polynomial (in general): $g(n) = n^k$</li>
+    <li>Exponential (typically $a = 2$): $g(n) = a^n$</li>
+</ul>
+<p>Finally, let's take a look at a function in Python and conduct a Big-Oh analysis:</p>
+<pre><code>def two_sum_dbl_loop(int_list: List[int], number: int) -> List[List[int]]:
+    sums = []
+
+    for i in range(len(int_list)):
+        for j in range(i + 1, len(int_list)):
+            # print(str(i) + ' ' + str(j))
+            if int_list[i] + int_list[j] == number:
+                sums.append([int_list[i], int_list[j]])
+
+    return sums</code></pre>
+<p>This function takes in a list of integers and another number. The goal is to find all the pairs of integers in the list
+that sum to the <code>number</code> parameter. Notice that there are two for-loops, which means we must conduct $n \cdot n$
+comparisons in order to traverse the whole list. We also conduct some lesser number of list appends for each pair that
+satisfies the <code>if</code> statement. Because we only consider the highest order term in Big-Oh analysis, this function is
+O$(n^2)$.</p>
+
+<p>It's difficult to truly appreciate the difference in efficiency between a O$(n^3)$ and O$(log n)$ algorithm which is
+why it is common to draw up a <a href="https://dzone.com/articles/learning-big-o-notation-with-on-complexity">table</a>
+showing the number of primitive operations for a given function and input size $n$:</p>
+<figure>
+    <img src="/Users/John1/Documents/DCS229/Final_Project/BigOh_perf.png" alt="Big-Oh table" width="700" height="400">
+    <figcaption><a href="https://jarednielsen.com/big-o-notation/">Big-Oh table</a></figcaption>
+</figure>
+<p>As we can see from this table, the difference in performance across all these functions is small for small input size
+(O$(n)$ with $2$ primitive operations and O$(n^3)$ with $8$ primitive operations for size $2$ input)
+but as we steadily increase $n$, this difference can become astronomical (O$(n)$ with $1,024$ primitive operations and O$(n^3)$
+with $1,073,741,824$ primitive operations for size $1,024$ input).</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/BigOh_Zine.jpg" alt="Big-Oh Zine" width="600" height="400">
+<figcaption>Big-Oh Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

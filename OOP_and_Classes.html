@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Object Oriented Programming & Classes</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Object Oriented Programming & Classes</h1>
+<h3>John Mieszczanski</h3>
+<p>Per <a href="https://en.wikipedia.org/wiki/Object-oriented_programming">Wikipedia</a>:</p>
+<blockquote cite="https://en.wikipedia.org/wiki/Object-oriented_programming">Object-oriented programming (OOP) is a
+    programming paradigm based on the concept of "objects",
+    which can contain data and code: data in the form of fields (often known as attributes or properties),
+    and code, in the form of procedures (often known as methods).</blockquote>
+<p>In languages such as Python, C++, and Java, all data items are
+    <a href="https://en.wikipedia.org/wiki/Object_(computer_science)">objects</a>, so these languages are referred to
+    as <em>object-oriented</em> programming languages. In any of these languages we can create an object by defining a
+    class (or using a built-in class/type, such as <code class="python">int</code> in Python) and then assigning a
+    variable to an instance of that class.</p>
+<p> What is a <a href="https://en.wikipedia.org/wiki/Class_(computer_programming)">class</a> you might ask? Well a
+    class is just a template/method for creating an object in any of the OOP languages already mentioned. The main
+    features of a class are a constructor that initiates an instance of the class with the relevant data/variables, and
+    a set of methods that defines the behavior of the class. These methods allow one to operate on an instance of the
+    class or the entire class itself. Additionally, variables of a class (the data) are either <em>instance</em>
+    variables, which are relevant to only a specific instance of the class, and <em>class</em> variables which are
+    shared by all instances of a class of the same type. An example of a class is outlined in pseudocode below:</p>
+<pre><code class="plaintext">class Dog{
+    string name;
+    string color;
+    float age;
+    int counter;
+
+    counter = 0
+
+    # Creates an instance of the Dog class
+    constructor(string name, string color, float age){
+        name = name;
+        fur_color = color;
+        age = age;
+        counter += 1;
+    }
+
+    # Some Dog class methods outlined below...
+    string get_name(){
+        return name;
+    }
+
+    string get_color(){
+            return color;
+        }
+
+    float get_age(){
+            return age;
+        }
+
+    # Returns age of dog in dog years
+    float dog_years(){
+        return age * 15;
+    }
+}
+
+int main(){
+    float human_age, dog_age;
+    string name, color;
+    # Create two instances of Dog
+    Clifford = Dog("Clifford", "Red", 12);
+    Sally = Dog("Sally", "Brown", 5);
+    print(Dog.counter);
+    # Access the age instance variable from Clifford
+    human_age = Clifford.get_age();
+    # Use the dog_years() method to get the age in dog years
+    # from Clifford
+    dog_age = Clifford.dog_years();
+    # Access the name instance variable from Clifford
+    name = Clifford.get_name();
+    print(human_age);
+    print(name);
+    # Access the color instance variable from Sally
+    color = Sally.get_color();
+    print(color);
+
+    return 0;
+}</code></pre>
+<p>In the above pseudocode example, we have a <code>Dog</code> class with three input parameters. We create an instance
+    of this class by calling <pre><code class="plaintext">Clifford = Dog("Clifford", "Red", 12);</code></pre> This initiates
+    the <code>constructor()</code> method which assigns the three parameters to the <em>instance</em> variables
+    <code class="plaintext">name</code>, <code class="plaintext">color</code>, and
+    <code  class="plaintext">age</code> which are special to the <code class="plaintext">Clifford</code> instance. We
+    also have the <em>class</em> variable <code>counter</code> which increments by one every time we create a new
+    instance of the <code>Dog</code> class. Therefore,</p>
+    <pre><code class="plaintext">Clifford = Dog("Clifford", "Red", 12);
+Sally = Dog("Sally", "Brown", 5);
+print(Dog.counter);</code></pre><p>prints 2 because we have created two instances. This <code>counter</code> class variable
+    can be accessed by any instance of <code>Dog</code>, or
+    by calling <code>Dog.counter</code> (i.e. directly accessing the class type). The <code>main()</code> function
+    demonstrates how we can use methods on instances of <code>Dog</code>. For example, <code>Clifford.get_age()</code>
+    accesses the <code>age</code> instance variable for the <code>Clifford</code> instance.</p>
+<p>A slightly more complicated example of a class is outlined below. In this example, a <code>Student</code> class is created
+    in Python:</p>
+<pre><code class="python">class Student:
+    __slots__ = ("fname", "lname", "class_")
+    # class variable
+    counter = 0
+
+    def __init__(self, fname, lname, class_):
+        # instance variables
+        self.fname = fname
+        self.lname = lname
+        self.class_ = class_
+        counter += 1
+
+    # Checks if two instances of Student are equal
+    def __eq__(self, other):
+        return self.fname == other.fname and self.lname == other.lname
+
+    # Allows one to print a Student instance
+    def __str__(self):
+        return self.fname + " " + self.lname + " " + str(self.class_)
+
+    def setFirstName(self, fname):
+        self.fname = fname
+
+    def setLastName(self, lname):
+        self.lname = lname
+
+    def get_fname(self):
+        return self.fname
+
+    def get_lname(self):
+        return self.lname
+
+    def get_class(self):
+        return self.class_</code></pre>
+<pre><code class="python">>>> john = Student("John", "Mieszczanski", 4)
+>>> tom = Student("Tom", "Smith", 4)
+>>> adrian = Student("Adrian", "Lemere", 3)
+>>> print(adrian.__str__())
+Adrian Lemere 3
+>>> print(tom)
+Tom Smith 4
+>>> print(john)
+John Mieszczanski 4
+>>> adrian.setFirstName("Yo Adrian")
+>>> print(adrian)
+Yo Adrian Lemere 3
+>>> print(tom == adrian)
+False
+>>> print(adrian == adrian)
+True
+>>> mashup = Student("Tom", "Smith", 1)
+>>> print(tom == mashup)
+True</code></pre>
+<p>In the above Python code snippet, we create a <code>Student</code> class. The constructor for this class is given
+    by</p><pre><code>def __init__(self, fname, lname, class_):
+        # instance variables
+        self.fname = fname
+        self.lname = lname
+        self.class_ = class_
+        counter += 1</code></pre><p>Every time we create a new <code>Student</code> instance, we initialize three
+instance variables from the three parameters and increment the class variable <code>counter</code> by one so we can
+track how many instances of <code>Student</code> we have. Each instance variable requires the prefix <code>self</code>,
+which is a feature unique to Python. Additionally, the <code>class_</code> instance variable has an underscore to indicate
+it should not be mutable. We also define an <code>__eq__</code> method that defines if two instances are equivalent
+or not. This method is demonstrated using the Python interpreter in the code below the class. The <code>__str__</code>
+method defines how an instance of <code>Student</code> is printed. Lastly, we have methods for changing the first and
+last names of a given <code>Student</code> instance, and methods that allow us to access information about a given
+<code>Student</code>.</p>
+<p>One might ask "Why use OOP and classes when we can just use functions?"
+The article <a href="https://stackoverflow.blog/2020/09/02/if-everyone-hates-it-why-is-oop-still-so-widely-spread/">
+If everyone hates it, why is OOP still so widely spread?</a> helps us answer this question. The main advantage
+highlighted by the article is <em>encapsulation</em>. What is <em>encapsulation</em>? Well, it is essentially the
+idea in OOP that data and methods are <em>encapsulated</em> within an object and thus we can control how that data is
+accessed with our methods. As the article notes, this allows us to protect data that we do not want changed. The abstraction
+inherent to OOP also allows a user to access and manipulate data without having to know what is going on underneath the
+hood. This allows for people with a far greater range of abilities to write useful code. Inheritance and polymorphism
+are also inherent to OOP and discussed in this article, but those concepts will be covered in a separate
+<a href="/Users/John1/Documents/DCS229/Final_Project/Inheritance_and_Polymorphism.html">document</a>.</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/Class_Zine.jpg" alt="OOP Zine" width="600" height=700">
+<figcaption>OOP Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

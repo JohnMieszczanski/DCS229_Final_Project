@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Priority Queue ADT</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Priority Queue ADT</h1>
+<h3>John Mieszczanski</h3>
+<p>The Priority Queue abstract data type (ADT) that is a collection of entries, where ach entry is a priority item
+(key-value) pair and the priority/key is "orderable". In other words, the key-value pair with the smallest key is
+typically the one with the highest priority and is thus the first entry to be removed.</p>
+<p>The Priority Queue ADT is outlined as follows:</p>
+<ul>
+    <li>Each entry is a priority-item (key-value) pair, where the priority/key is "orderable"
+    <ul>
+        <li><code>get_key() -> T</code></li>
+        <li><code>get_item() -> T</code></li>
+    </ul>
+    </li>
+    <li>The smallest key has the highest priority</li>
+    <li>Primary operations:
+        <ul>
+            <li><code>insert(key: T, item: T) -> None</code>
+                <ul>
+                    <li>Inserts entry with priority and item (key, item)</li>
+                </ul>
+            </li>
+            <li><code>remove_min() -> Entry</code>
+                <ul>
+                    <li>Removes and returns (key, item) entry with smallest key</li>
+                </ul>
+            </li>
+            <li><code>min() -> Entry</code>
+                <ul>
+                    <li>Returns without removing (key,item) entry with smallest key</li>
+                </ul>
+            </li>
+            <li><code>len() -> int</code>
+                <ul>
+                    <li>Returns the number of elements in the Priority Queue</li>
+                </ul>
+            </li>
+            <li><code>is_empty() -> bool</code>
+                <ul>
+                    <li>Returns True if the Priority Queue is empty, False otherwise</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li><code>remove_min()</code> or <code>min()</code> return <code>None</code> if Priority Queue is empty</li>
+    <li>Assume that a newly created Priority Queue is empty</li>
+</ul>
+<p>Now let's take a look at how the Priority Queue ADT is implemented in Python using the <code>heapq</code> module:</p>
+<pre><code>from typing import Generic, List, TypeVar
+T = TypeVar("T")  # allows variable T to be used to represent a generic type
+
+from heapq import *
+import random
+import string
+
+
+class Entry(Generic[T]):
+    def __init__(self, priority: 'float|str', data: T):
+        self._key   = priority
+        self._value = data
+
+    # Need to be able to compare keys of entries in order to determine priority. Also necessary
+    # because we are implementing using a heap
+    def __eq__(self, other):
+        return self._key == other._key and self._value == other._value
+
+    # Need to be able to compare keys of entries in order to determine priority. Also necessary
+    # because we are implementing using a heap
+    def __lt__(self, other):
+        return self._key < other._key
+
+    # not the Pythonic way to use __repr__ but allows us to print list of Entry
+    def __repr__(self):
+        key = f"'{self._key}'"   if isinstance(self._key,   str) else f"{self._key}"
+        val = f"'{self._value}'" if isinstance(self._value, str) else f"{self._value}"
+        return f"({key},{val})"
+
+    def __str__(self):
+        return repr(self)
+
+
+class PriorityQueue(Generic[T]):
+    __slots__ = ('_container')
+
+    def __init__(self):
+        self._container: List[T] = list()
+
+    def __len__(self): return len(self._container)
+
+    def is_empty(self): return len(self._container) == 0
+
+    def insert(self, key: 'float|str', item: T) -> None:
+        e = Entry(key, item)
+        heappush(self._container, e) # in by priority/key
+
+    def remove_min(self) -> Entry:
+        return heappop(self._container) # out by priority/key</code></pre>
+<p>If we run the following code using our <code>PriorityQueue</code> class:</p>
+<pre><code>def main():
+    pq = PriorityQueue()
+    for i in range(20):
+        pq.insert(random.randint(1, 100), random.choice(string.ascii_letters))
+    print("Keys of PQ printed in sorted order:")
+    for i in range(len(pq)):
+        print(pq.remove_min())
+
+
+if __name__ == '__main__':
+    main()</code></pre>
+<p>we might get something like this:</p>
+<pre><code class="plaintext">Keys of PQ printed in sorted order:
+(1,'r')
+(8,'r')
+(11,'D')
+(15,'T')
+(18,'e')
+(22,'h')
+(28,'F')
+(31,'M')
+(34,'z')
+(34,'A')
+(37,'O')
+(50,'i')
+(51,'Z')
+(57,'v')
+(58,'L')
+</code></pre>
+<p>What is <code>heapq</code> you might ask? Essentially, <code>heapq</code> is just a Python module that implements the
+    heap queue algorithm, also known as the priority queue algorithm. What it is doing is using a Heap data structure to organize
+    all the key-value pairs we pass as entries. There will be a separate document on heaps, but under the hoop, the heap is a binary tree
+    where every parent node has a value less than or equal to any of its children (why we defined those operations for the
+    <code>Entry</code> class. Thus, when we are popping off the highest priority entry from the Priority Queue, we are taking
+    at the root of the heap binary tree as it has the smallest key. In order for the heap to maintain its shape and properties
+    when adding and removing elements, it undergoes a pair of processes called up-heap bubbling and down-heap bubbling respectively.</p>
+<p>One common application of the <a href="https://en.wikipedia.org/wiki/Priority_queue#Applications">Priority Queue</a> is
+using it to implement the A* search algorithm. This is because A* is a "best-first" search algorithm and requires
+using a weighted graph (could be weighted by distance, time, etc.). It needs to be weighted because A* is supposed to find
+the path with the smallest cost. It is easy to see how we could create a priority ordering on these weights. In the
+Maze lab, we wanted to find the smallest distance. When selecting the next location to explore, the Priority Queue spits
+out whichever location is estimated to be the shortest to the goal (i.e. end of the maze).</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/Priority_Queue_Zine.jpg" alt="Priority Queue Zine" width="600" height="500">
+<figcaption>Priority Queue Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

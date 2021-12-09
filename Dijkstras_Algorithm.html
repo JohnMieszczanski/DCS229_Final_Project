@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dijkstra's Algorithm</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Dijkstra's Algorithm</h1>
+<h3>John Mieszczanski</h3>
+<p><b>Dijkstra's algorithm</b> is an algorithm for finding the shortest path between any two nodes in a graph. It was developed
+by computer scientist Edsger W. Dijkstra in 1956, hence its namesake. Before diving into the algorithm, let's cover some
+graph terminology. A graph consists of a set of <b>edges</b> and a set of <b>vertices</b>, where edges are pairings of vertices that
+are connected. If the graph is not directed, then the edges consist of <em>unordered</em> pairs, but if the graph is directed,
+the edges consist of ordered pairs to reflect the direction of the connection of the two vertices. Here are some ways we can
+describe edges:</p>
+<ul>
+    <li>An edge is described as <u>incident on</u> its endpoints (i.e. the vertices it is connected to)</li>
+    <li>A <u>loop</u> is an edge the emanates and terminates on the same vertex</li>
+    <li>Two distinct edges are called <u>parallel</u> if they share the same endpoints</li>
+    <li>Two distinct edges are called <u>adjacent</u> if they share a common endpoint</li>
+</ul>
+<p>And here are some ways to describe vertices:</p>
+<ul>
+    <li>Two vertices are <u>adjacent</u> if they share a common edge</li>
+    <li>A vertex if <u>adjacent to self</u> if has a loop edge connected to itself</li>
+    <li>A vertex is <u>isolated</u> if it has no associated edge</li>
+    <li>The <u>degree</u> of a vertex is the number of edges incident on that vertex
+    <ul>
+        <li>The total <u>degree</u> of a graph is the sum $\Sigma deg(v_i)$ of the number of edges across all vertices</li>
+        <li>Note that $\Sigma deg(v_i) = 2|E|$ where $|E|$ is the number of edges</li>
+    </ul>
+    </li>
+</ul>
+<p>A common way to represent a graph abstractly (which we need to do on a computer) is to use an adjacency matrix $A$.
+Here are some properties of an arbitrary adjacency matrix $A$ representing graph $G$:</p>
+<ul>
+    <li>$A$ is an $n$ x $n$ matrix where $n$ is the number of vertices</li>
+    <li>Every entry $a_{ij}$ is the number of edges from $v_i$ to $v_j$
+        <pre><code class="plaintext">for (i = 0 ; i < n ; i++)
+    for (j = 0 ; j < n ; j++)
+        if ({v_i, v_j} in E)  # {v_i, v_j} is an edge connecting v_i and v_j and E is the set of all edges of G
+            A[i][j] += 1</code></pre>
+    </li>
+    <li>$A$ is symmetric for undirected graphs</li>
+    <li>$A$ is symmetric for digraph only when $G$ is complete</li>
+    <li>$A^m$ (matrix multiplication) gives the number of paths of length $m = 1, 2, 3, ... , n$
+    <ul>
+        <li>If $A^k(i,j) \neq 0$ for any $k$, then vertex $v_j$ is reachable from $v_i$</li>
+        <li>Each matrix multiplication is O$(n^3)$ and we need $n - 1$ matrix multiplications so determining
+        reachability with this process is O$(n^4)$ (not very good!). There are much better ways to determine
+        reachability, such as using BFS (O$(n)$)</li>
+    </ul>
+    </li>
+</ul>
+<p>The approach of Dijkstra's algorithm is outlined as follows:</p>
+<ul>
+    <li>From the starting vertex, find the shortest path (via edge) to the closest vertex</li>
+    <li>From the new vertex, find the shortest path (via edge or through previous vertex) to next closest
+    vertex</li>
+    <li>repeat the above process</li>
+    <li>Find shortest path (via edge or through $\geq 1$ of the previous vertices) to the destination/goal vertex</li>
+</ul>
+<p>Dijkstra's algorithm works because the shortest path to any arbitrary vertex $v_i$ must be a direct route (edge), or
+it must pass through vertices of paths already considered.</p>
+<p>Here is pseudocode sketch implementing Dijkstra's algorithm:</p>
+<pre><code class="plaintext">d = [infinity] * |V|  # |V| is the number of vertices. This list shows the cost of going from
+# v_origin (origin vertex) to all the other vertices. We start by setting each value to infinity, which represents
+# all vertices being unreachable initially
+d[v_orig] = 0  # It takes zero cost to go from v_orig to itself
+U = {v_orig}  # U is the set of "visited" vertices. Initially, v_orig is the only "visited" vertex
+u = v_orig  # u is always the most recently added vertex
+
+while u != v_dest:  # we want this loop to stop once the destination vertex is added
+    # update distances
+    for all v_i not in U:  # we consider only unvisited vertices:
+        if v_i is adjacent to u:  # use adjacency matrix here to determine this
+            d[v_i] = min(d[v_i], d[u] + len({u, v_i}))
+            # This is determining whether adding u gives a shorter/cheaper path to v_i by first going through
+            # u (with cost d[u]) and then along the {u, v_i} edge. It is comparing the new path to v_i to the old
+            # path of v_i if one exists, and then taking the minimum
+        # find the next closest vertex to v_orig. We pick the unvisited vertex having the minimum distance from v_orig
+        # and then adding it to U
+        min_dist = infinity
+        for all v_i not in U:
+            if d[v_i] < min_dist:  # consider only "unvisited" vertices
+                u = v_i
+                min_dist = d[v_i]
+        U = U.append(u)  # add vertex u to set U (it is now considered "visited"</code></pre>
+<p>The algorithm outlined above will find the length of the shortest path from the origin vertex to the goal vertex, but it does
+not provide that path explicitly. However, this certainly does not mean you can't implement Dijsktra's algorithm with
+the path given as well, it just takes some extra bookkeeping. In terms of time complexity, if we implement the
+algorithm using an adjacency matrix and array of vertices U, as we have done above, the running time is O$(|E| + |V|^2)$
+in the worst case, where $|E|$ is the number of edges, and $|V|$ the number of vertices. The reason for this is that for
+each vertex $v_i$ we need to compare it distance to all its neighboring vertices, which means in the worst case be have
+$|V| \cdot |V| = |V|^2$ comparisons in the worst case. We also need to explore all edges $E$ once, so this is where the
+$|E|$ term comes from. Note that O$(|E| + |V|^2)$ can be reduced to O$(|V|^2)$ = O$(n^2)$.</p>
+<p>A Python implementation of Dijsktra's algorithm is outlined below:</p>
+<pre><code>from typing import List
+
+
+def print_adjacency(adjacency: List[List[float]]) -> None:
+    ''' prints an adjacency matrix in easy-to-read format
+    Args:
+        adj: a 2D list of edge weights for a graph
+    '''
+    print("   ", end = "")
+    for c in range(len(adjacency)):
+        print(f"{c:>2} ", end = '')
+    print()
+    for r in range(len(adjacency)):
+        print(f"{r:>2} ", end = '')
+        for c in range(len(adjacency[r])):
+            value = adjacency[r][c]
+            if value == float("Inf"): value = "∞"
+            print(f"{value:>2} ", end = '')
+        print()
+    print('---' * (len(adjacency) + 1))
+
+
+def dijkstra(adjacency: List[List[float]], start: int, dest: int) -> List[float]:
+    dist = [float("Inf")] * len(adjacency)  # Length of adjacency list is the # of vertices
+    dist[start] = 0  # Zero cost from origin to itself
+    visited = [False] * len(adjacency)
+    visited[start] = True  # Origin is initially the only "visited" vertex
+    u = start  # u is always the most recently added vertex
+
+    while u != dest:  # stop once the destination vertex is added
+        # update distances
+        for i in range(len(adjacency)):
+            if not visited[i]:  # consider only unvisited vertices
+                if adjacency[u][i] > 0:  # use adjacency matrix...
+                    dist[i] = min(dist[i], dist[u] + adjacency[u][i])
+        # find next closest vertex to origin
+        min_dist = float("Inf")
+        for i in range(len(adjacency)):
+            if not visited[i]:  # consider only unvisited vertices
+                if dist[i] < min_dist:
+                    u = i
+                    min_dist = dist[i]
+        visited[u] = True  # add vertex u to the visited set
+
+    return dist</code></pre>
+<p>If we run the following code:</p>
+<pre><code>def main():
+    num_vertices = 6
+    adj = [[float("Inf")] * num_vertices for i in range(num_vertices)]
+    adj[0][1] = adj[1][0] = 7
+    adj[0][3] = adj[3][0] = 2
+    adj[1][2] = adj[2][1] = 2
+    adj[1][4] = adj[4][1] = 3
+    adj[2][5] = adj[5][2] = 4
+    adj[3][4] = adj[4][3] = 1
+    adj[4][5] = adj[5][4] = 10
+
+    print_adjacency(adj)
+    start = input("Enter a starting vertex ('q' to quit): ")
+    while start.lower() != 'q':
+        end = input("Enter a destination vertex ('q' to quit): ")
+        if end.lower() == 'q': break
+        try:
+            start = int(start)
+            end = int(end)
+            if 0 <= start < num_vertices and \
+               0 <= end   < num_vertices:
+                distances = dijkstra(adj, start, end)
+                print(f"The shortest path from {start} to {end} is length {distances[end]}")
+            else:
+                print(f"Invalid indices: {start}, {end}")
+        except:
+            print("Error")
+
+        start = input("Enter a starting vertex ('q' to quit): ")</code></pre>
+<p>we might get something like this:</p>
+<pre><code class="plaintext">    0  1  2  3  4  5
+ 0  ∞  7  ∞  2  ∞  ∞
+ 1  7  ∞  2  ∞  3  ∞
+ 2  ∞  2  ∞  ∞  ∞  4
+ 3  2  ∞  ∞  ∞  1  ∞
+ 4  ∞  3  ∞  1  ∞ 10
+ 5  ∞  ∞  4  ∞ 10  ∞
+---------------------
+Enter a starting vertex ('q' to quit): 0
+Enter a destination vertex ('q' to quit): 5
+The shortest path from 0 to 5 is length 12
+Enter a starting vertex ('q' to quit): 1
+Enter a destination vertex ('q' to quit): 3
+The shortest path from 1 to 3 is length 4
+Enter a starting vertex ('q' to quit): q
+</code></pre>
+<p>In this example, we have basic 6x6 graph that is implemented as an adjacency matrix. The <code>main()</code> function
+allows us to use the algorithm to find the shortest distance between any two valid vertices on the graph. It only gives
+the distance between those points, not the path itself. It is possible to implement this with the path, but this exercise
+was designed to be a basic example.</p>
+<p>There are many, many <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm#Applications">applications</a> of Dijkstra's
+algorithm in the real world. For example, we might want to find the least cost path when building oil pipelines, electricity lines,
+or railroads. These would all have to take into account different costs such as terrain, distance, price, etc. that could be
+factored into an implementation. One could develop a sort of equation accounting for all these factors, so they wouldn't have to
+run Dijkstra's algorithm for each individual cost parameter. The algorithm has also been used to determine optimal long-distance
+footpaths in Ethiopia to see how people's natural tendencies matches up with what is the mathematically "optimal" route. This could
+provide an interesting study on human intuition, and it also could reveal potential costs that the algorithm has not taken into
+account, but humans have.</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/Graph_Zine.jpg" alt="Graph Zine" width="600" height="500">
+<figcaption>Graph Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fixed Size Arrays & Linked Lists</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Fixed Size Arrays & Linked Lists</h1>
+<h3>John Mieszczanski</h3>
+<p>The fixed-size-array is a data structure that holds a collection of elements generally accessible by index.
+Additionally, the fixed-size-array has a static number of slots that can hold elements. Once all slots of the fixed-size-array
+have been filled, no more elements can be added. If we want to add a new element at this point, we would have
+to overwrite an old element. The fixed-size-array data structure is outlined as follows:</p>
+<ul>
+    <li>Stores arbitrary objects (elements) at contiguous memory locations</li>
+    <li>Primary fixed-size-array operations:
+    <ul>
+        <li><code>append(self, item: 'T') -> None</code>
+        <ul>
+            <li>Appends the given item to the array</li>
+            <li>O$(1)$ time complexity</li>
+        </ul>
+        </li>
+        <li><code>__setitem__(self, index: int, item: 'T') -> None</code>
+        <ul>
+            <li>Sets the entry in the array at the given index to the given item</li>
+            <li>O$(1)$ time complexity</li>
+        </ul>
+        </li>
+        <li><code>__getitem__(self, index: int) -> 'T'</code>
+        <ul>
+            <li>Returns the item in the array at the given index</li>
+            <li>O$(1)$ time complexity</li>
+        </ul>
+        </li>
+    </ul>
+    </li>
+    <li>Auxiliary fixed-size-array operations:
+    <ul>
+        <li><code>len(self) -> int</code>
+            <ul>
+                <li>Returns number of actual elements in the array (not number of slots)</li>
+            </ul>
+        </li>
+    </ul>
+    </li>
+    <li><code>append()</code> on a filled fixed-size-array results in an error</li>
+    <li>Assume the newly created fixed-size-array is empty</li>
+</ul>
+<p>Next, let's take a look at how the fixed-size-array is implemented in Python:</p>
+<pre><code>from ctypes import *
+
+class FixedSizeArray:
+    __slots__ = ('_n', '_capacity', '_array', 'resize_method', 'resize_number')
+
+    def __init__(self):
+        self._n            = 0  # count of number of actual elements
+        self._capacity     = 1  # default MyArray capacity
+        self._array        = self._make_array(self._capacity)
+
+    def _make_array(self, capacity: int) -> 'ctypes array':
+        ''' private method to reserve space for a low-level array of the
+            given capacity
+        Args:
+            capacity: integer size of the array
+        Returns:
+            a ctypes low-level array
+        '''
+        return (capacity * py_object)()  # defined in ctypes
+
+
+    def len(self) -> int:
+        ''' returns number of actual elements in the array
+        Args:
+        Returns:
+            integer count of number of elements in the array
+        '''
+        return self._n
+
+    def __getitem__(self, index: int) -> 'T':
+        ''' returns the item in the array at the given index
+        Args:
+            index: integer index between 0 and self.len() - 1
+        Returns:
+            item of type T at given index
+        Raises:
+            IndexError exception of index is invalid
+        '''
+        if index < 0 or index >= self._n:
+            raise IndexError(f"invalid index {index} for size {self._n}")
+        return self._array[index]
+
+    def __setitem__(self, index: int, item: 'T') -> None:
+        ''' sets the entry in the array at the given index to the given item
+        Args:
+            index: integer index between 0 and self.len() - 1
+            item:  type-T element (must match type of entry in list)
+        Returns:
+            None
+        Raises:
+            IndexError exception of index is invalid
+            TypeError exception if type of item does not match types in array
+        '''
+        if index < 0 or index >= self._n:
+            raise IndexError(f"invalid index {index} for size {self._n}")
+        if type(self._array[0]) != type(item):
+            raise TypeError(f"invalid item type {type(item)} -- " \
+                          + f"expected type {type(self._array[0])}")
+        self._array[index] = item
+
+    def append(self, item: 'T') -> None:
+        ''' appends the given item to the array, increasing the capacity of
+            the array as necessary
+        Args:
+            item: type-T element to append to the array
+        Return:
+            None
+        '''
+        if self._n < self._capacity:
+            self._array[self._n] = item
+            self._n += 1  # one more item added
+        else:
+            raise ValueError(f"Cannot add any more elements. Capacity of fixed-sized-array has been reached")
+
+    def __str__(self) -> str:
+        ''' returns a string representation of this array
+        Args:
+        Returns:
+            a string
+        '''
+        if self._n > 0 and type(self._array[0]) == str:
+            string = ",".join('\'' + str(a) + '\'' for a in self._array[0:self._n])
+        else:
+            string = ",".join(str(a) for a in self._array[0:self._n])
+        return "[" + string + "]"</code></pre>
+<p>In this example, we use the <code>ctypes</code> Python module which allows us to create a C-like low-level array
+of size <code>capacity</code>, which is a parameter we pass in when creating an object of type <code>FixedSizeArray</code>.
+During the semester, we created a version of this class that allows us grow the size of the array once the capacity had been
+reached, however, this would make our array <em>dynamic</em> instead of <em>fixed</em>, which is what has been implemented
+above. Note carefully that if one tries to add an element to the array when it full, they will get a <code>ValueError</code>.</p>
+<p>Similar to the fixed-size-array, the linked-list data structure holds a collection of elements. However, the key difference is that
+elements in a linked list are not held in contiguous memory. Instead, the linked-list is made up of nodes, with each node
+containing the element/data as well as a pointer to the memory location of the next item in the list. The last item in the
+linked list points to <code>NULL</code>. It is also possible for linked-lists to be doubly linked, meaning they have a pointer
+to the item before and after them. The linked-list data structure is outlined as follows:</p>
+<ul>
+    <li>Stores arbitrary objects (elements) at non-contiguous memory locations by using pointers</li>
+    <li>Primary linked-list operations:
+        <ul>
+            <li><code>add_left(self, item: T) -> None</code>
+                <ul>
+                    <li>Adds item T to the left of the linked list</li>
+                    <li>O$(1)$ time complexity</li>
+                </ul>
+            </li>
+            <li><code>add_right(self, item: T) -> None</code>
+                <ul>
+                    <li>Adds item T to the right of the linked list</li>
+                    <li>O$(1)$ time complexity</li>
+                </ul>
+            </li>
+            <li><code>remove_left(self) -> None</code>
+                <ul>
+                    <li>Removes the leftmost item in the linked list and returns it</li>
+                    <li>O$(1)$ time complexity</li>
+                </ul>
+            </li>
+            <li><code>remove_right(self) -> None</code>
+                <ul>
+                    <li>Removes the rightmost item in the linked list and returns it</li>
+                    <li>O$(1)$ time complexity</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>If we try to remove from empty linked-list, we will get error or nothing will happen (depends on implementation)</li>
+    <li>Assume the newly created linked-list is empty</li>
+</ul>
+<p>Next, let's take a look at how a singly linked-list is implemented in Python:</p>
+<pre><code class="python">from typing import Generic, TypeVar, Optional
+T = TypeVar("T")  # allows variable T to be used to represent a generic type
+
+
+class Node(Generic[T]):
+    def __init__(self, data: T):
+        self.data = data
+        self.next = None  # eventually another Node
+
+
+class LinkedList(Generic[T]):
+
+    def __init__(self):
+        self._head: Optional[Node[T]] = None   # the head pointer in the linked list
+        self._tail: Optional[Node[T]] = None   # the tail pointer in the linked list
+
+    def add_left(self, item: T) -> None:
+        ''' adds the given T-type data item as part of a Node to the left of the
+            linked list... remember to reset the head pointer, and, when
+            appropriate, the tail pointer
+        Args:
+            item: a type T data item to be included as the data in the inserted Node
+        Returns:
+            None:
+        '''
+        new_node = Node(item)
+        if self._head is None:
+            # First Node in the list
+            self._head = new_node
+            self._tail = new_node
+        else:
+            new_node.next = self._head
+            self._head = new_node
+
+    def add_right(self, item: T) -> None:
+        ''' adds the given T-type data item as part of a Node to the right of the
+            linked list... remember to reset the tail pointer, and, when
+            appropriate, the head pointer
+        Args:
+            item: a type T data item to be included as the data in the inserted Node
+        Returns:
+            None:
+        '''
+        new_node = Node(item)
+        if self._head is None:
+            # First Node in the list
+            self._head = new_node
+            self._tail = new_node
+        else:
+            # Appending to end of list
+            self._tail.next = new_node
+            self._tail = new_node
+
+    def remove_left(self) -> Optional[T]:
+        ''' removes the first Node in the linked list, returning the data item
+            inside that Node...  Remember to handle the special case of an
+            empty list (what should the head and tail pointers be in that case?)
+            and remember to update the head & tail pointer(s) when appropriate.
+        Returns:
+            a T type data item extracted from the removed Node
+        '''
+        if self._head != None:
+            data = self._head.data
+            self._head = self._head.next
+        else:
+            data = None
+
+        return data
+
+    def remove_right(self) -> Optional[T]:
+        ''' removes the last Node in the linked list, returning the data item
+            inside that Node...  Remember to handle the special case of an
+            empty list (what should the head and tail pointers be in that case?)
+
+            Note: This one is trickier because you always have to walk (almost)
+            all the way through the list in order to know what the new tail
+            should be.
+
+            Remember to update the head & tail pointer(s) when appropriate.
+
+        Returns:
+            a T type data item extracted from the removed Node
+        '''
+        if self._head is None:
+            data = None
+        elif self._head == self._tail:
+            data = self._head.data
+            self._head = None
+            self._tail = None
+        else:
+            current_node = self._head
+            while current_node.next != self._tail:
+                current_node = current_node.next
+            data = self._tail.data
+            self._tail = current_node
+            self._tail.next = None
+
+        return data
+
+    def __str__(self):
+        ''' returns a str representation of the linked list data
+        Returns:
+            an str representation of the linked list, showing head pointer
+                and data tiems
+        '''
+        str_ = "head->"
+
+        # start out at the head Node, and walk through Node by Node until we
+        # reach the end of the linked list (i.e., the ._next entry is None)
+        ptr_ = self._head
+        while ptr_ is not None:
+            str_ += "[" + str(ptr_.data) + "]->"
+            ptr_ = ptr_.next  # move ptr_ to the next Node in the linked list
+
+        if self._head != None: str_ = str_[:-2]
+        str_ += "<-tail"
+        return str_</code></pre>
+<p>If we run the following code:</p>
+<pre><code>def main():
+    # create a LinkedList and try out some various adds and removes
+    ll = LinkedList[int]()
+
+    ll.add_right(8)
+    print(ll)
+
+    ll.add_right(6)
+    print(ll)
+
+    ll.add_left(7)
+    print(ll)
+
+    ll.add_left(5)
+    print(ll)
+
+    print()
+
+    print(ll)
+    print(ll.remove_left())
+    print(ll)
+    print(ll.remove_left())
+    print(ll)
+    print(ll.remove_left())
+    print(ll)
+    print(ll.remove_left())
+    print(ll)
+    print(ll.remove_left())
+    print(ll)
+    print()
+
+    ll = LinkedList()
+    print(ll)
+    ll.add_left(8)
+    ll.add_left(6)
+    ll.add_left(7)
+    ll.add_right(5)
+    print(ll)
+
+    print(f"Removing from left: {ll.remove_left()}")
+    print(ll)
+
+    for i in range(3):
+        print(f"Removing from right: {ll.remove_right()}")
+        print(ll)
+
+
+if __name__ == "__main__":
+    main()</code></pre>
+<p>we would get:</p>
+<pre><code class="plaintext">head->[8]<-tail
+head->[8]->[6]<-tail
+head->[7]->[8]->[6]<-tail
+head->[5]->[7]->[8]->[6]<-tail
+
+head->[5]->[7]->[8]->[6]<-tail
+5
+head->[7]->[8]->[6]<-tail
+7
+head->[8]->[6]<-tail
+8
+head->[6]<-tail
+6
+head-><-tail
+None
+head-><-tail
+
+head-><-tail
+head->[7]->[6]->[8]->[5]<-tail
+Removing from left: 7
+head->[6]->[8]->[5]<-tail
+Removing from right: 5
+head->[6]->[8]<-tail
+Removing from right: 8
+head->[6]<-tail
+Removing from right: 6
+head-><-tail</code></pre>
+<p>Note that we can add and delete items on the left and right of the linked list without having to shift any elements. Also,
+in this implementation, instead of throwing an error when trying to remove from an empty list, the <code>remove</code>
+function just does nothing.</p>
+<p>Generally speaking, linked-lists are the underlying data structures of higher order abstract data types, such as stacks. The
+reason one might prefer them over arrays are that they generally make it easier to insert and delete elements. If you want to insert
+into an array, you must shift a certain number of elements to the right (insertion and deletion is O$(n)$), but in the linked list, all you
+need to do is move around the pointers of the two nodes to the left and right (insertion and deletion is O$(1)$). To better
+visualize the linked list data structure, here are two illustrations:</p>
+<figure>
+    <img src="/Users/John1/Documents/DCS229/Final_Project/Doubly-Linked-List.png" alt="Doubly Linked List" width="700" height="250">
+    <figcaption><a href="https://www.geeksforgeeks.org/types-of-linked-list/">Doubly Linked List</a></figcaption>
+</figure>
+<figure>
+    <img src="/Users/John1/Documents/DCS229/Final_Project/Singly-Linked-List1.png" alt="Singly Linked List" width="700" height="250">
+    <figcaption><a href="https://www.geeksforgeeks.org/types-of-linked-list/">Singly Linked List</a></figcaption>
+</figure>
+<p>If we wanted to insert element E between B and C for the doubly-linked-list, we would simply reconnect the next pointer
+of B to E, the previous pointer of C to E and then give E previous pointer of B and next pointer of C. In the case of the
+singly linked list, we would only need to reconnect B's next pointer to E in addition to having E point to C.</p>
+<p>To reiterate, one the key advantages of a linked list over an array is insertion and deletion. However, that is not the
+only advantage. In the <a href="https://en.wikipedia.org/wiki/Linked_list#Linked_lists_vs._dynamic_arrays">Wikipedia</a> article
+on linked-lists, it also points out how linked-lists benefit from non-contiguous memory allocation, and the fact that a linked-list
+does not have to resize ever, whereas a dynamic array has to resize (an expensive process) when capacity has been reached. However,
+dynamic arrays do have their advantages as well. One such advantage is that sequential access on arrays is often faster on machines due
+to "optimal locality of reference". This is a fancy way of saying the processor finds it easier to access the same set of contiguous memory locations.</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/Array_LL_Zine.jpg" alt="Linked List and Array Insertion Zine" width="500" height=750">
+<figcaption>Linked List and Array Insertion Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

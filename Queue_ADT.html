@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Queue ADT</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Queue ADT</h1>
+<h3>John Mieszczanski</h3>
+<p>The Queue is an abstract data type (ADT) that is a collection of elements similar to the Stack but with a different
+    method for accessing elements. When accessing elements from the Queue, the process is FIFO (first in, first out), which
+    essentially just means that the first (oldest) item "pushed" onto the queue is the first to be "popped" off.
+    Some direct applications include:</p>
+<ul>
+    <li>Direct applications:
+        <ul>
+            <li>Waiting lines</li>
+            <li>Accessing a shared resource (e.g. printer, Bates Leavitt system)</li>
+            <li>Multiprogramming (execute programs in sequence on one CPU)</li>
+        </ul>
+    </li>
+    <li>Indirect applications:
+        <ul>
+            <li>Auxiliary data structure used by some algorithms (such as breadth-first-search)</li>
+            <li>As an internal component of other data structures</li>
+        </ul>
+    </li>
+</ul>
+<p>The Queue ADT is outlined as follows:</p>
+<ul>
+    <li>Stores arbitrary objects (elements), where insertions & deletions are FIFO</li>
+    <li>Primary queue operations:
+        <ul>
+            <li><code>push(e: T) -> None</code>
+                <ul>
+                    <li>Inserts element e at the end of the queue</li>
+                    <li>O$(1)$ time complexity</li>
+                </ul>
+            </li>
+            <li><code>pop() -> T</code>
+                <ul>
+                    <li>Removes and returns element at the front of queue</li>
+                    <li>O$(1)$ time complexity (with linked list)</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>Auxiliary fixed-size-array operations:
+        <ul>
+            <li><code>len() -> int</code>
+                <ul>
+                    <li>Returns the number of elements in the queue</li>
+                </ul>
+            </li>
+            <li><code>is_empty() -> bool</code>
+                <ul>
+                    <li>Boolean indicating whether queue is empty</li>
+                </ul>
+            </li>
+            <li><code>front() -> T</code>
+                <ul>
+                    <li>Returns reference to first element without removing</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li><code>pop()</code> or <code>front()</code> on an empty queue results in an error</li>
+    <li>Assume that a newly created queue is empty</li>
+</ul>
+<p>Now let's take a look at how the Queue ADT is implemented in Python by using lists:</p>
+<pre><code>from typing import Generic, List, TypeVar
+
+T = TypeVar("T")  # allows variable T to be used to represent a generic type
+
+
+class EmptyError(Exception):
+    ''' class extending Exception to better document stack errors '''
+    def __init__(self, message: str):
+        self.message = message
+
+
+class Queue(Generic[T]):
+    ''' class to implement a queue ADT using a Python list '''
+
+    __slots__ = ("_data")           # will be a Python list
+
+    def __init__(self):
+        self._data: List[T] = []    # typing _data to be a list of type T
+
+    def __len__(self) -> int:
+        ''' allows the len function to be called using an Queue object, e.g.,
+               queue = Queue()
+               print(len(queue))
+        Returns:
+            number of elements in the queue, as an integer
+        '''
+        return len(self._data)
+
+    def push(self, item: T) -> None:
+        ''' pushes a given item of arbitrary type onto the queue
+        Args:
+            item: an item of arbitrary type
+        Returns:
+            None
+        '''
+        self._data.append(item)
+
+    def pop(self) -> T:
+        ''' removes the leftmost element from the queue and returns that element
+        Returns:
+            the leftmost item, of arbitrary type
+        Raises:
+            EmptyError exception if the queue is empty
+        '''
+        if len(self._data) == 0:
+            raise EmptyError('Error in Queue.pop(0): stack is empty')
+        return self._data.pop(0)  # calling Python list pop() on left of the list
+
+    def top(self) -> T:
+        ''' returns the leftmost element from the queue without modifying the queue
+        Returns:
+            the leftmost item, of arbitrary type
+        Raises:
+            EmptyError exception if the queue is empty
+        '''
+        if len(self._data) == 0:
+            raise EmptyError('Error in ArrayStack.top(): stack is empty')
+        return self._data[0]
+
+    def is_empty(self) -> bool:
+        ''' indicates whether the queue is empty
+        Returns:
+            True if the queue is empty, False otherwise
+        '''
+        return len(self._data) == 0
+
+    def __str__(self) -> str:
+        ''' returns an str implementation of the Queue '''
+        string = str(self._data)
+        '''
+        string = "---top---\n"
+        for i in range(len(self._data) - 1, -1, -1):
+            string += str(self._data[i]) + "\n"
+        string += "---bot---"
+        '''
+        return string</code></pre>
+<p>If we run the following code:</p>
+<pre><code>def main():
+   # example using int as the generic type
+   q = Queue[int]()
+   q.push(8)
+   q.push(6)
+   q.push(7)
+   print(q)
+
+   print(f'Pop: {q.pop()}')
+   print(q)
+
+   print(f'Pop: {q.pop()}')
+   print(q)
+
+   print(f'Pop: {q.pop()}')
+   print(q)
+
+   try:
+       print(f'Pop: {q.pop()}')
+   except EmptyError as err:
+       print(err)
+
+   # example using str as the generic type
+   q2 = Queue[str]()
+   q2.push("a")
+   q2.push("b")
+   q2.push("c")
+   print(q2)
+
+
+if __name__ == '__main__':
+    main()</code></pre>
+<p>we would get</p>
+<pre><code class="plaintext">[8, 6, 7]
+Pop: 8
+[6, 7]
+Pop: 6
+[7]
+Pop: 7
+[]
+Error in Queue.pop(0): stack is empty
+['a', 'b', 'c']
+</code></pre>
+<p>Again, note that the first item pushed onto the Queue (8) is the first to be popped off. Also, note that we used a
+Python list to implement this ADT, which is itself an ADT in Python. When taking the element from the front of the Queue,
+we call <code>self._data.pop(0)</code>. If the list is implemented using an array, we would have to shift all the other
+elements in the Queue to the left by one, which takes O$(n)$ time. However, if the list type is implemented using a linked-list
+data structure, we don't have to do any shifting, so popping off the front element only would take O$(1)$ time.</p>
+<p>To summarize, the Queue ADT is another fundamental ADT with many important uses. One of the main uses of the Queue is
+when implementing the <a href="https://en.wikipedia.org/wiki/Breadth-first_search">Breadth First Search</a> algorithm
+(something we implemented for our Maze lab this semester). This algorithm uses a Queue to hold all the nodes in the
+exploration space. In other words, the Queue contains the frontier along which the BFS algorithm is currently searching.
+Because Queue is FIFO, we search all the nodes adjacent to the current node before moving to any node more than one step
+away.</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/Queue_Zine.jpg" alt="Queue Zine" width="600" height="500">
+<figcaption>Queue Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Driven Development (TDD) & Pytest</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Test Driven Development (TDD) & Pytest</h1>
+<h3>John Mieszczanski</h3>
+<p>TDD is a popular software testing framework used by many large technology companies in order to improve the quality
+of code produced. The process is as follows:</p>
+<ol>
+    <li>Write a stub for the solution.</li>
+    <li>Write code for <u>one</u> test.
+        <ul>
+            <li>Include comment of your "given, when, then"
+                <ul>
+                    <li><b><u>Given</u></b> some initial context (the given starting conditions),</li>
+                    <li><b><u>When</u></b> an event occurs,</li>
+                    <li><b><u>Then</u></b> ensure some outcomes.</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>Show that the test fails.</li>
+    <li>Write just enough code to pass the test.</li>
+    <li>Show that the test passes.</li>
+    <li>Refactor (i.e. fix/clean up the code) and re-test (go back to step 2).</li>
+</ol>
+<p>Let's take a closer look at step 2; the actual implementation of the test. The ideal test is often referred to as a
+"Four-Phase Test" and follows the Given-When-Then methodology:</p>
+<ul>
+    <li>Setup (Given)
+        <ul>
+            <li>Create data for input & predetermine output</li>
+        </ul>
+    </li>
+    <li>Exercise (When)
+        <ul>
+            <li>Call the function being tested</li>
+        </ul>
+    </li>
+    <li>Verify (Then)
+        <ul>
+            <li>analyze correctness of test</li>
+        </ul>
+    </li>
+    <li>Breakdown/Teardown (Given)
+        <ul>
+            <li>Clean up/remove data (not always needed)</li>
+        </ul>
+    </li>
+</ul>
+<p>This methodology is also referred to as</p>
+<ul>
+    <li>Arrange</li>
+    <li>Act</li>
+    <li>Assert</li>
+</ul>
+<p>where the teardown step is assumed to be automated. Next, let's try an example. We want to implement a Lyceum feature
+that calculates the average quiz store for any given student. We assume the quiz scores are already recorded and stored in
+an internal list.</p>
+<ul>
+    <li>Step 1: Write a stub for a solution:<pre><code class="python">def compute_quiz_average(quiz_list):
+    return None  # will execute, but not pass
+</code></pre>
+    </li>
+    <li>Step 2: Write code for <u>one</u> test:
+        <ul>
+            <li><b><u>Given</u></b> a list containing the items [3,4,5]</li>
+            <li><b><u>When</u></b> the avg of those items is computed</li>
+            <li><b><u>Then</u></b> the result should be 4</li>
+        </ul><pre><code class="python">def test_compute_quiz_average():
+    quiz_list = [3, 4, 5]
+    if compute_quiz_average(quiz_list) != 4:
+        print("Test fails!") # @ this point, should fail!</code></pre>
+    </li>
+    <li>Step 3: Show the test fails: <pre><code>def main():
+    test_compute_quiz_average()
+
+if __name__ == "__main__":
+    main()</code></pre>
+    </li>
+    <li>Step 4: Write code to pass the test: <pre><code>def compute_quiz_average(quiz_list):
+    sum_ = 0
+    for i in range(len(quiz_list)):
+        sum_ += quiz_list[i]
+    return sum_ / len(quiz_list)</code></pre>
+    </li>
+    <li>Step 5: Show the test passes: <pre><code>def main():
+    test_compute_quiz_average()
+
+if __name__ == "__main__":
+    main()</code></pre>
+    </li>
+    <li>Step 6: Refactor (if necessary) and re-test: <pre><code>def compute_quiz_average(quiz_list):
+    ''' returns average of all quizzes in the list '''
+    return sum(quiz_list) / len(quiz_list)</code></pre>
+    </li>
+    <li>Step 2: Write code for <u>one</u> (new) test:
+        <ul>
+            <li><b><u>Given</u></b> an empty list</li>
+            <li><b><u>When</u></b> the average of items is computed</li>
+            <li><b><u>Then</u></b> the result should be 0</li>
+        </ul><pre><code class="python">def test_compute_quiz_average_on_empty_list():
+    quiz_list = []
+    try:
+        result = compute_quiz_average(quiz_list)
+    except ZeroDivisionError:
+        print("Empty list test fails!")
+    else:
+        if result != 0:
+            print("Empty list test fails!")</code></pre>
+    </li>
+    <li>Step 3: Show the test fails: <pre><code>def main():
+    test_compute_quiz_average_on_empty_list()
+
+if __name__ == "__main__":
+    main()</code></pre>
+    </li>
+    <li>Step 4: Write code to pass the test: <pre><code>def compute_quiz_average(quiz_list):
+    ''' returns average of all quizzes in the list '''
+    if len(quiz_list) == 0: return 0
+    return sum(quiz_list) / len(quiz_list)</code></pre>
+    </li>
+    <li>Step 5: Show the test passes: <pre><code>def main():
+    test_compute_quiz_average_on_empty_list()
+
+if __name__ == "__main__":
+    main()</code></pre>
+    </li>
+    <li>Step 6: Refactor (if necessary) and re-test: <pre><code>def compute_quiz_average(quiz_list):
+    ''' returns average of all quizzes in the list '''
+    denom = max(1, len(quiz_list))
+    return sum(quiz_list) / denom</code></pre>
+    </li>
+    <li>Repeat with another test...</li>
+</ul>
+<p>Because we have been working so much in Python this semester, the <code>pytest</code> framework has been an integral
+part of anything we've done related to TDD. In order to use <code>pytest</code> properly, we have to set up the folder(s)
+containing our code in a highly specific way as shown in the example below:</p>
+<pre><code>.
+├── code_base
+│   ├── __init__.py
+│   └── functions.py  # code stub (see step 1 of TDD)
+└── tests
+    ├── __init__.py
+    ├── test_find_index_of_item
+    │   └── __init__.py
+    └── test_find_item
+            ├── __init__.py
+            └── test_find_item.py  # test for function.py (see step 2 of TDD)</code></pre>
+<p>As we can see from the example above, each folder needs to contain an <code>__init__.py</code> file which allows us
+to use <code>pytest</code> as a module. Also note that the tests go in a separate folder than the actual code one is
+testing, and each test has its own folder. Furthermore, a fundamental feature of a <code>pytest</code> test is an <code>assert</code>
+statement to check whether the test passes. Let's say we wanted to test a function that finds items in a list. A test that would
+work in the <code>pytest</code> framework would look something like this:</p>
+<pre><code>from code_base.functions import find_item
+
+def test_find_first_item():
+''' given: list [0,1,2,3,4], item 0
+     when:  users searches for 0 in the list
+     then:  function returns True (item found) '''
+   assert(find_item([0,1,2,3,4], 0) == True)
+</code></pre>
+If our <code>pwd</code> is the folder containing both our <code>codebase</code> and <code>tests</code> folders then we can
+type <code>pytest tests</code> in the command line, which will then tell us which tests passed and which ones failed. If we
+had not yet built up the <code>find_item()</code> function, the output of running that command might look something like this:
+<pre><code class="plaintext">% pytest tests
+――――――――――――――――――――――――――――――― test_find_first_item ―――――――――――――――――――――――――――――――
+
+	def test_find_first_item():
+    	''' given: list [0,1,2,3,4], item 0
+        	when:  user searches for 0
+        	then:  function returns True (item found)
+    	'''
+    	print("Testing find_item([0,1,2,3,4], 0) == True")
+>   	assert(find_item([0,1,2,3,4], 0) == True)  # pytest uses assert
+E   	assert equals failed
+E     	None  True
+...
+Results (0.04s):
+   	1 failed
+     	- tests/test_find_item/test_find_item.py:3 test_find_first_item
+</code></pre>
+<p>To summarize, TDD is a very popular method for testing code in the technology industry, and <code>pytest</code> is a
+popular Python framework for conducting TDD in Python. In the article
+    <a href="https://theqalead.com/general/statistics-studies-benefits-test-driven-development/">
+        Statistics & Studies: The Benefits of Test Driven Development</a>, the author discusses a case study involving Microsoft and
+IBM that showed TDD increased initial development time by 35%. This makes sense, as TDD tends to make one hold off on diving into
+the weeds and instead implement features one at a time to pass a series of tests. In a non-TDD approach, one might just start
+coding all the features he/she thinks they need. However, Microsoft and IBM also noted that there were improvements in quality of code,
+and this saved time to fixing problems that might have arisen later using a less formal approach. Overall, while TDD has some
+upfront costs that requires one to get used to the more methodical process, it appears to have a positive impact on quality, with
+IBM reporting 40% drop in code defects and Microsoft reporting a 60-90% drop in code defects as a result.</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/TDD_Zine.jpg" alt="TDD Zine" width="500" height=750">
+<figcaption>TDD Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

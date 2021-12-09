@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Heaps</title>
+    <style>
+		body {
+			line-height: 140%;
+			margin: 50px;
+			width: 1150px;
+		}
+
+		code {font-size: 120%;}
+
+
+		pre code {
+			background-color: #eee;
+			border: 1px solid #999;
+			display: block;
+			padding: 10px;
+		}
+
+        blockquote {
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+        }
+
+    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+</head>
+<body>
+<h1>Heaps</h1>
+<h3>John Mieszczanski</h3>
+<p>A heap is a binary tree T that satisfies the following two conditions:</p>
+<ul>
+    <li>There is a relational property on the way keys are stored in T</li>
+    <li>There is a structural property in terms of the shape of T itself</li>
+</ul>
+<p>What is a binary tree you might ask? Well, a binary tree is simply just another data structure like an array or linked
+list. It is type of tree, where a tree is a set of nodes storing elements such that the nodes have a
+parent-child relationship satisfying:</p>
+<ul>
+    <li>If the tree is non-empty, the tree has a root node that has no parent</li>
+    <li>Each node of the tree different from the root has a unique parent</li>
+</ul>
+<p>It is possible for a tree to be empty. A binary tree is an ordered tree with the following properties:</p>
+<ul>
+    <li>Every node has at most two children</li>
+    <li>Each child node is labeled as a left child or a right child</li>
+    <li>A left child precedes a right child in the ordering of children</li>
+</ul>
+<p>Here is some terminology associated with binary trees:</p>
+<ul>
+    <li><u>left subtree</u>: subtree rooted at left child</li>
+    <li><u>right subtree</u>: subtree rooted at right child</li>
+    <li><u>proper</u>: binary tree in which each node has zero or two children</li>
+</ul>
+<p>Now that we have fleshed out some background on binary trees, let's talk about the relational property of a heap,
+also known as the "heap order property". What this means is that in a heap, for every node other than the root,
+the key stored at that node is greater than or equal to the key stored at that node's parent. As a result, the keys
+encountered from root to leaf are non-decreasing and the minimum key is always found at the root. Let's also consider
+the structural property of the heap, also known as the "complete binary tree property". This property means that for a
+heap T with height $h$ having levels $0,1,...h-1$ of T, each level has the maximum number of nodes possible. The remaining
+nodes at level $h$ reside at the leftmost possible positions. an easy way to determining the height $h$ of a heap with
+$n$ entries is to calculate $h = \lfloor \text{log} n \rfloor$ (i.e. use the floor function).</p>
+<p>There are two operations that we might want to conduct on a heap:</p>
+<ul>
+    <li><code>insert(k, v)</code>
+    <ul>
+        <li>Insert a key-value pair into the heap</li>
+    </ul>
+    </li>
+    <li><code>remove_min()</code>
+        <ul>
+            <li>Remove the minimum value (root) from the heap</li>
+        </ul>
+    </li>
+</ul>
+<p>When conducting both of these operations, we have to ensure both the heap order property and the complete binary tree
+property remain satisfied. Let's start with outlining a series of steps for inserting a node with key-value pair (k, v):</p>
+<ol>
+    <li>Insert the node in the leftmost position on level $h$</li>
+    <li>Compare the newly inserted node with its parent. If the newly inserted node is larger, swap it with it parent.</li>
+    <li>Continue with step 2 until the heap order property is restored</li>
+</ol>
+<p>From the process outlined above, steps 2 and 3 are known as <b>up-heap bubbling</b>. Next, let's outline the process
+for removing the minimum node with key-value pair (k, v):</p>
+<ol>
+    <li>Replace the root node with the last leaf node on level $h$</li>
+    <li>Compare the replacement against its children. If one of the children is smaller,
+        swap the replacement with the smallest child</li>
+    <li>Repeat step 2 until the heap order property is restored</li>
+</ol>
+<p>From the process outlined above, steps 2 and 3 are known as <b>down-heap bubbling</b>.</p>
+<p>Now that we have outlined the two processes key to the heap data structure; insertion and deletion, let's consider
+their time complexity. When inserting an element into the heap, the worst case scenario is that we have bubble all the
+way up to the root. This would take $h$ comparisons, where $h$ is the height of the tree. Because $h = \lfloor \text{log} n \rfloor$,
+it follows that insertion is O$(log n)$. Similarly, deletion is O$(log n)$ as well because in the worst case we have to
+bubble all the way down to level $h$, requiring $h$ comparisons.</p>
+<p>In the Priority Queue document, we showed an implementation of a Priority Queue that used heaps. Let's take another
+look at this code:</p>
+<pre><code>from typing import Generic, List, TypeVar
+T = TypeVar("T")  # allows variable T to be used to represent a generic type
+
+from heapq import *
+import random
+import string
+
+
+class Entry(Generic[T]):
+    def __init__(self, priority: 'float|str', data: T):
+        self._key   = priority
+        self._value = data
+
+    # Need to be able to compare keys of entries in order to determine priority. Also necessary
+    # because we are implementing using a heap
+    def __eq__(self, other):
+        return self._key == other._key and self._value == other._value
+
+    # Need to be able to compare keys of entries in order to determine priority. Also necessary
+    # because we are implementing using a heap
+    def __lt__(self, other):
+        return self._key < other._key
+
+    # not the Pythonic way to use __repr__ but allows us to print list of Entry
+    def __repr__(self):
+        key = f"'{self._key}'"   if isinstance(self._key,   str) else f"{self._key}"
+        val = f"'{self._value}'" if isinstance(self._value, str) else f"{self._value}"
+        return f"({key},{val})"
+
+    def __str__(self):
+        return repr(self)
+
+
+class PriorityQueue(Generic[T]):
+    __slots__ = ('_container')
+
+    def __init__(self):
+        self._container: List[T] = list()
+
+    def __len__(self): return len(self._container)
+
+    def is_empty(self): return len(self._container) == 0
+
+    def insert(self, key: 'float|str', item: T) -> None:
+        e = Entry(key, item)
+        heappush(self._container, e) # in by priority/key
+
+    def remove_min(self) -> Entry:
+        return heappop(self._container) # out by priority/key</code></pre>
+<p>This Priority Queue is implemented using the heap data structure via the <code>heapq</code> module. The two main operations
+to note are <code>heappush()</code> and <code>heappop()</code> which are essentially just the insertion and deletion we
+discussed above. Because we defined a priority relationship with our keys (less-than and equal-to), these two heap operations
+are able to implement the two algorithms sketched out above under the hood of the module.</p>
+<p>As was made clear in the document discussing the Priority Queue, one of the main
+<a href="https://en.wikipedia.org/wiki/Heap_(data_structure)#Applications">applications</a> of the heap is to implement the
+Priority Queue. The part that makes it useful in this matter is the heap order property. Without this property, the heap
+would not be useful as we would not be able to guarantee we are popping of the minimum (or maximum) element. Other applications include
+selection algorithms (i.e. minimum or maximum integer) as we can draw off the minimum element (at the root) or the maximum element (if we implemented a
+maximum heap instead of a minimum heap) in constant time.</p>
+<figure>
+<img src="/Users/John1/Documents/DCS229/Final_Project/Heap_Zine.jpg" alt="Heap Zine" width="600" height="900">
+<figcaption>Heap Zine</figcaption>
+</figure>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>
